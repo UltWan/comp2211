@@ -4,52 +4,66 @@
 #include <string.h>
 #include <unistd.h>
 
+#define token_args " \t\r\n"
+
 int main(int argc, char **argv)
 {
-  char command[50];
-  char exit[6] = "exit\n";
-  char info[6] = "info\n";
-  char pwd[5]= "pwd\n";
-  char cwd[50];
-  char temp[50] = "temp";
-  char cd[50]= "cd /";
-  char *chwd = command + 3;
+  char *command;
+  char input[100];
+  char cwd[100];
 
-  // loop does not exit until exit command is entered
-  while (strcmp(command, exit) != 0){
+  // infinite loop for shell
+  while (true){
     printf("Enter command: ");
-    fgets(command, sizeof command, stdin);
-    printf("You have selected command: %s", command);
+    fgets(input, 100, stdin);
+    // splits string into command as first part
+    command = strtok(input, token_args);
 
-    if (strcmp(command, info) == 0){
-      printf("COMP2211 Simplified Shell by sc16wyrw\n");
-    }
-
-    // gets and prints current working directory
-    if (strcmp(command, pwd) == 0){
-      // if working directory has been changed
-      if (strcmp(cwd, temp) == 0){
-        get_current_dir_name(cwd);
-        printf("1) The current working directory is: %s\n", cwd);
+      // exits loop command is exit
+      if (strcmp(command, "exit") == 0){
+        break;
       }
-      // if working directory has not been changed
+
+      // prints basic info
+      else if (strcmp(command, "info") == 0){
+        printf("COMP2211 Simplified Shell by sc16wyrw\n");
+      }
+
+      // gets and prints current working directory
+      else if (strcmp(command, "pwd") == 0){
+        printf("The current working directory is:%s\n", getcwd(cwd, sizeof(cwd)));
+      }
+
+      // changes current working directory and prints out current one
+      else if (strcmp(command, "cd") == 0) {
+        char *path = strtok(0, token_args);
+
+        if (path == NULL){
+          printf("Error: No path specified.\n");
+        }
+        else{
+          chdir(path);
+          printf("The current working directory is:%s\n", (getcwd(cwd, sizeof(cwd))));
+        }
+      }
+
+      // executes filepath
+      else if (strcmp(command, "ex") == 0) {
+        char *path = strtok(0, token_args);
+
+        if (path == NULL){
+          printf("Error: No path specified.\n");
+        }
+        else{
+          chdir(path);
+          printf("The current working directory is:%s\n", (getcwd(cwd, sizeof(cwd))));
+        }
+      }
+
       else{
-        getcwd(cwd, sizeof(cwd));
-        printf("2) The current working directory is: %s\n", cwd);
+        printf("No such command found\n");
       }
-    }
-
-    // changes current working directory
-    if (strncmp(command, cd, 4) == 0){
-      chdir(chwd);
-      strcpy(cwd, chwd);
-      strcpy(temp, chwd);
-      printf("Switched current working directory to: %s\n", cwd);
-    }
-
-    else{
-      printf("No such command found\n");
-    }
+    
   }
   printf("Exiting shell\n");
   return 0;  
