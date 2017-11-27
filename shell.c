@@ -4,23 +4,28 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#define TOKEN_ARGS " \t\r\n"
+#define TOKEN_ARGS " \t\n"
 
-  char *command;
-  char input[100];
-  char cwd[100];
+char *command;
+char input[100];
+char cwd[100];
 
 int main(int argc, char **argv)
 {
   // infinite loop for shell
   while (true){
-    printf("Enter command: ");
+    printf("$: ");
     fgets(input, 100, stdin);
     // splits string into command as first part
     command = strtok(input, TOKEN_ARGS);
 
+      const char *path = strtok(0, TOKEN_ARGS);
+      const char *redirect = strtok(0, TOKEN_ARGS);
+      const char *path2 = strtok(0, TOKEN_ARGS);
+
+      // checks empty input
       if (command == NULL){
-        printf("No command entered\n");
+        printf("Error: No command entered\n");
       }
 
       // exits loop command is exit
@@ -40,10 +45,8 @@ int main(int argc, char **argv)
 
       // changes current working directory and prints out current one
       else if (strcmp(command, "cd") == 0) {
-        const char *path = strtok(0, TOKEN_ARGS);
-
         if (path == NULL){
-          perror("Error: No path specified.\n");
+          perror("$");
         }
         else{
           chdir(path);
@@ -51,68 +54,90 @@ int main(int argc, char **argv)
         }
       }
 
-      // executes filepath
+      // executes program in filepath
       else if (strcmp(command, "ex") == 0) {
-        const char *path = strtok(0, TOKEN_ARGS);
-        int status;
-
         if (path == NULL){
           printf("Error: No path specified.\n");
         }
-        else{
-          pid_t pid, wpid;
+
+        /*else if ((path2 != NULL) && (strcmp(redirect, "|") == 0)){
+          pid_t child, parent;
           int status;
 
-          pid = fork();
-          if (pid == 0) {
+          child = fork();
+          if (child == 0) {
+            FILE * fp;
+
+            fp = freopen(path2, "w", stdout);
           // Child process
             if (execvp(path, argv[1]) == -1) {
-              perror("lsh");
+              perror("$");
             }
             exit(EXIT_FAILURE);
           } 
-          else if (pid < 0) {
+          else if (child < 0) {
           // Error forking
-            perror("lsh");
+            perror("$");
           }
           else {
           // Parent process
             do {
-              wpid = waitpid(pid, &status, WUNTRACED);
+              printf("Output printed to %s\n", path2);
+              parent = waitpid(child, &status, WUNTRACED);
+            } 
+            while (!WIFEXITED(status) && !WIFSIGNALED(status));
+          }
+        }*/
+
+        else if ((path2 != NULL) && (strcmp(redirect, ">") == 0)){
+          pid_t child, parent;
+          int status;
+
+          child = fork();
+          if (child == 0) {
+            FILE * fp;
+
+            fp = freopen(path2, "w", stdout);
+          // Child process
+            if (execvp(path, argv[1]) == -1) {
+              perror("$");
+            }
+            exit(EXIT_FAILURE);
+          } 
+          else if (child < 0) {
+          // Error forking
+            perror("$");
+          }
+          else {
+          // Parent process
+            do {
+              printf("Output printed to %s\n", path2);
+              parent = waitpid(child, &status, WUNTRACED);
             } 
             while (!WIFEXITED(status) && !WIFSIGNALED(status));
           }
         }
-      }
 
-      // executes background process
-      else if (strcmp(command, "exb") == 0) {
-        const char *path = strtok(0, TOKEN_ARGS);
-        int status;
-
-        if (path == NULL){
-          printf("Error: No path specified.\n");
-        }
         else{
-          pid_t pid, wpid;
+          pid_t child, parent;
           int status;
 
-          pid = fork();
-          if (pid == 0) {
+          child = fork();
+          if (child == 0) {
           // Child process
             if (execvp(path, argv[1]) == -1) {
-              perror("lsh");
+              perror("$");
             }
             exit(EXIT_FAILURE);
           } 
-          else if (pid < 0) {
+          else if (child < 0) {
           // Error forking
-            perror("lsh");
+            perror("$");
           }
           else {
           // Parent process
             do {
-              wpid = waitpid(pid, &status, WUNTRACED);
+              parent = waitpid(child, &status, WUNTRACED);
             } 
             while (!WIFEXITED(status) && !WIFSIGNALED(status));
           }
@@ -125,7 +150,7 @@ int main(int argc, char **argv)
       }
 
       else{
-        printf("No such command exists\n");
+        printf("Error: Invalid command entered\n");
       }
     
   }
@@ -133,4 +158,5 @@ int main(int argc, char **argv)
   return 0;  
 }
 
-//ex /home/csunix/sc16wyrw/comp1711/sc16wyrw/assignment_03/textbanners
+// /home/ryan/Desktop/coding/comp1711/assignment_01/timetable > a.txt
+// /home/csunix/sc16wyrw/comp1711/sc16wyrw/assignment_01/timetable
