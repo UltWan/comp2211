@@ -20,12 +20,10 @@ int main(int argc, char **argv)
     command = strtok(input, TOKEN_ARGS);
 
       const char *path = strtok(0, TOKEN_ARGS);
-      const char *redirect = strtok(0, TOKEN_ARGS);
-      const char *path2 = strtok(0, TOKEN_ARGS);
 
       // checks empty input
       if (command == NULL){
-        printf("Error: No command entered\n");
+        printf("$: No command entered\n");
       }
 
       // exits loop command is exit
@@ -35,59 +33,33 @@ int main(int argc, char **argv)
 
       // prints basic info
       else if (strcmp(command, "info") == 0){
-        printf("COMP2211 Simplified Shell by sc16wyrw\n");
+        printf("$: COMP2211 Simplified Shell by sc16wyrw\n");
       }
 
       // gets and prints current working directory
       else if (strcmp(command, "pwd") == 0){
-        printf("The current working directory is:%s\n", getcwd(cwd, sizeof(cwd)));
+        printf("$: The current working directory is:%s\n", getcwd(cwd, sizeof(cwd)));
       }
 
       // changes current working directory and prints out current one
       else if (strcmp(command, "cd") == 0) {
         if (path == NULL){
-          perror("$");
+          printf("$: No path entered\n");
         }
         else{
           chdir(path);
-          printf("The current working directory is:%s\n", (getcwd(cwd, sizeof(cwd))));
+          printf("$: The current working directory is:%s\n", (getcwd(cwd, sizeof(cwd))));
         }
       }
 
       // executes program in filepath
       else if (strcmp(command, "ex") == 0) {
+        const char *redirect = strtok(0, TOKEN_ARGS);
+        const char *path2 = strtok(0, TOKEN_ARGS);
+
         if (path == NULL){
-          printf("Error: No path specified.\n");
+          printf("$: No path specified.\n");
         }
-
-        /*else if ((path2 != NULL) && (strcmp(redirect, "|") == 0)){
-          pid_t child, parent;
-          int status;
-
-          child = fork();
-          if (child == 0) {
-            FILE * fp;
-
-            fp = freopen(path2, "w", stdout);
-          // Child process
-            if (execvp(path, argv[1]) == -1) {
-              perror("$");
-            }
-            exit(EXIT_FAILURE);
-          } 
-          else if (child < 0) {
-          // Error forking
-            perror("$");
-          }
-          else {
-          // Parent process
-            do {
-              printf("Output printed to %s\n", path2);
-              parent = waitpid(child, &status, WUNTRACED);
-            } 
-            while (!WIFEXITED(status) && !WIFSIGNALED(status));
-          }
-        }*/
 
         else if ((path2 != NULL) && (strcmp(redirect, ">") == 0)){
           pid_t child, parent;
@@ -97,21 +69,21 @@ int main(int argc, char **argv)
           if (child == 0) {
             FILE * fp;
 
-            fp = freopen(path2, "w", stdout);
-          // Child process
+            fp = freopen(path2, "w+", stdout);
+            // Child process
             if (execvp(path, argv[1]) == -1) {
               perror("$");
             }
             exit(EXIT_FAILURE);
           } 
           else if (child < 0) {
-          // Error forking
+            // Error forking
             perror("$");
           }
           else {
-          // Parent process
+            // Parent process
             do {
-              printf("Output printed to %s\n", path2);
+              printf("$: Output printed to %s\n", path2);
               parent = waitpid(child, &status, WUNTRACED);
             } 
             while (!WIFEXITED(status) && !WIFSIGNALED(status));
@@ -124,18 +96,18 @@ int main(int argc, char **argv)
 
           child = fork();
           if (child == 0) {
-          // Child process
+            // Child process
             if (execvp(path, argv[1]) == -1) {
               perror("$");
             }
             exit(EXIT_FAILURE);
           } 
           else if (child < 0) {
-          // Error forking
+            // Error forking
             perror("$");
           }
           else {
-          // Parent process
+            // Parent process
             do {
               parent = waitpid(child, &status, WUNTRACED);
             } 
@@ -150,13 +122,9 @@ int main(int argc, char **argv)
       }
 
       else{
-        printf("Error: Invalid command entered\n");
+        printf("$: Invalid command entered\n");
       }
-    
   }
-  printf("Exiting shell\n");
+  printf("$: Exiting shell\n");
   return 0;  
 }
-
-// /home/ryan/Desktop/coding/comp1711/assignment_01/timetable > a.txt
-// /home/csunix/sc16wyrw/comp1711/sc16wyrw/assignment_01/timetable
